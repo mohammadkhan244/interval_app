@@ -109,6 +109,14 @@ button:active {
   word-break: break-word;
 }
 
+.rule-description {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
 .rule-meta {
   font-size: 0.8rem;
   color: var(--muted);
@@ -212,6 +220,25 @@ label {
 
 label:first-of-type {
   margin-top: 0;
+}
+
+textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+  line-height: 1.5;
+  padding: 10px 12px;
+  outline: none;
+  resize: vertical;
+  min-height: 72px;
+}
+
+textarea:focus {
+  border-color: var(--copper);
 }
 
 input[type="text"],

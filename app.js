@@ -1,8 +1,8 @@
 // Replace with your actual VAPID public key after running npx web-push generate-vapid-keys
-const VAPID_PUBLIC_KEY = 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY';
+const VAPID_PUBLIC_KEY = 'BBQCa2ZFsINX-mg6yzodYZl7fQ2y_J-pXBW7R-xBan9sTGQTk85qQkQ0bCpO6_6gg6-PNzkFXRzWb8tvPYpvndA'
 
 // Shared secret for API auth — must match REMINDERS_SECRET env var on Vercel
-const API_SECRET = 'REPLACE_WITH_YOUR_REMINDERS_SECRET';
+const API_SECRET ='103074'
 
 const API_HEADERS = {
   'Content-Type': 'application/json',
@@ -94,6 +94,7 @@ function renderRules(rules) {
       <div class="rule-top">
         <div style="flex:1">
           <div class="rule-message">${escHtml(rule.message)}</div>
+          ${rule.description ? `<div class="rule-description">${escHtml(rule.description)}</div>` : ''}
           <div class="rule-meta">
             ${intervalLabel(rule.intervalValue, rule.intervalUnit)},
             ${windowLabel(rule.windowStart, rule.windowEnd)}
@@ -139,6 +140,7 @@ function openModal(rule = null) {
   document.getElementById('field-message').value = rule ? rule.message : '';
   document.getElementById('field-interval-value').value = rule ? rule.intervalValue : 1;
   document.getElementById('field-interval-unit').value = rule ? rule.intervalUnit : 'hour';
+  document.getElementById('field-description').value = rule ? (rule.description || '') : '';
   document.getElementById('field-window-start').value = rule ? (rule.windowStart || '') : '';
   document.getElementById('field-window-end').value = rule ? (rule.windowEnd || '') : '';
   document.getElementById('modal-overlay').classList.remove('hidden');
@@ -163,6 +165,7 @@ document.getElementById('rule-form').addEventListener('submit', async (e) => {
   const id = document.getElementById('field-id').value;
   const payload = {
     message: document.getElementById('field-message').value.trim(),
+    description: document.getElementById('field-description').value.trim() || null,
     intervalValue: Number(document.getElementById('field-interval-value').value),
     intervalUnit: document.getElementById('field-interval-unit').value,
     windowStart: document.getElementById('field-window-start').value || null,
