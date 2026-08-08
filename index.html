@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Reminders</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Reminders</h1>
+      <button id="btn-add" class="btn-primary">+ Add</button>
+    </header>
+
+    <main id="rules-list">
+      <p class="empty-state">No reminders yet.</p>
+    </main>
+
+    <div id="modal-overlay" class="hidden">
+      <div id="modal">
+        <h2 id="modal-title">Add Reminder</h2>
+        <form id="rule-form">
+          <input type="hidden" id="field-id" />
+
+          <label for="field-message">Message</label>
+          <input
+            type="text"
+            id="field-message"
+            placeholder="e.g. Drink water"
+            required
+            autocomplete="off"
+          />
+
+          <label>Interval</label>
+          <div class="row-inline">
+            <input
+              type="number"
+              id="field-interval-value"
+              min="1"
+              value="1"
+              required
+            />
+            <select id="field-interval-unit">
+              <option value="min">min</option>
+              <option value="hour" selected>hour</option>
+              <option value="day">day</option>
+              <option value="month">month</option>
+            </select>
+          </div>
+
+          <label>Active window <span class="hint">(optional)</span></label>
+          <div class="row-inline">
+            <input type="time" id="field-window-start" />
+            <span class="sep">–</span>
+            <input type="time" id="field-window-end" />
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" id="btn-cancel" class="btn-ghost">Cancel</button>
+            <button type="submit" class="btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
