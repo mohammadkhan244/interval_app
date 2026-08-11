@@ -100,6 +100,13 @@ function renderRules(rules) {
             ${intervalLabel(rule.intervalValue, rule.intervalUnit)},
             ${windowLabel(rule.windowStart, rule.windowEnd, rule.timezone)}
           </div>
+          <div class="rule-stats">
+            <span class="stat">🔥 ${rule.currentStreak ?? 0}d</span>
+            <span class="stat">${rule.percentComplete ?? 0}% done</span>
+            <span class="stat">Best ${rule.longestStreak ?? 0}d</span>
+            <span class="stat">7d ${rule.last7Rate ?? 0}%</span>
+            <span class="stat">30d ${rule.last30Rate ?? 0}%</span>
+          </div>
         </div>
         <label class="toggle" title="${rule.active ? 'Pause' : 'Resume'}">
           <input type="checkbox" class="toggle-active" data-id="${rule.id}" ${rule.active ? 'checked' : ''} />

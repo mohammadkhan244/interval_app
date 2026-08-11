@@ -32,6 +32,7 @@ self.addEventListener('push', (e) => {
     renotify: true,
     requireInteraction: true,
     actions: [
+      { action: 'done', title: 'Done' },
       { action: 'snooze', title: 'Snooze' },
       { action: 'skip', title: 'Skip Today' },
     ],
@@ -45,7 +46,7 @@ self.addEventListener('notificationclick', (e) => {
   const { action } = e;
   const { ruleId } = e.notification.data || {};
 
-  if ((action === 'snooze' || action === 'skip') && ruleId) {
+  if ((action === 'done' || action === 'snooze' || action === 'skip') && ruleId) {
     e.waitUntil(
       fetch('/api/action', {
         method: 'POST',

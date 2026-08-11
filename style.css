@@ -123,6 +123,23 @@ button:active {
   margin-top: 4px;
 }
 
+.rule-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.stat {
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
 .rule-actions {
   display: flex;
   gap: 8px;
