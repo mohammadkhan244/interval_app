@@ -27,10 +27,19 @@ function timeToMinutes(hhmm) {
   return h * 60 + m;
 }
 
-function isWithinWindow(windowStart, windowEnd) {
+function isWithinWindow(windowStart, windowEnd, timezone) {
   if (!windowStart && !windowEnd) return true;
+  const tz = timezone || 'America/Chicago';
   const now = new Date();
-  const current = now.getHours() * 60 + now.getMinutes();
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(now);
+  const h = Number(parts.find((p) => p.type === 'hour').value);
+  const m = Number(parts.find((p) => p.type === 'minute').value);
+  const current = h * 60 + m;
   const start = windowStart ? timeToMinutes(windowStart) : 0;
   const end = windowEnd ? timeToMinutes(windowEnd) : 24 * 60;
   return current >= start && current <= end;
@@ -66,7 +75,7 @@ export default async function handler(req, res) {
     if (rule.skippedUntil && rule.skippedUntil >= today) continue;
 
     // Window check
-    if (!isWithinWindow(rule.windowStart, rule.windowEnd)) continue;
+    if (!isWithinWindow(rule.windowStart, rule.windowEnd, rule.timezone)) continue;
 
     // Interval check
     const interval = intervalMs(rule.intervalValue, rule.intervalUnit);

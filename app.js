@@ -75,9 +75,10 @@ function intervalLabel(value, unit) {
   return `every ${value} ${u}`;
 }
 
-function windowLabel(start, end) {
+function windowLabel(start, end, timezone) {
   if (!start && !end) return 'all day';
-  return `${start || '?'} – ${end || '?'}`;
+  const tz = timezone ? ` ${timezone}` : '';
+  return `${start || '?'} – ${end || '?'}${tz}`;
 }
 
 function renderRules(rules) {
@@ -97,7 +98,7 @@ function renderRules(rules) {
           ${rule.description ? `<div class="rule-description">${escHtml(rule.description)}</div>` : ''}
           <div class="rule-meta">
             ${intervalLabel(rule.intervalValue, rule.intervalUnit)},
-            ${windowLabel(rule.windowStart, rule.windowEnd)}
+            ${windowLabel(rule.windowStart, rule.windowEnd, rule.timezone)}
           </div>
         </div>
         <label class="toggle" title="${rule.active ? 'Pause' : 'Resume'}">
@@ -143,6 +144,9 @@ function openModal(rule = null) {
   document.getElementById('field-description').value = rule ? (rule.description || '') : '';
   document.getElementById('field-window-start').value = rule ? (rule.windowStart || '') : '';
   document.getElementById('field-window-end').value = rule ? (rule.windowEnd || '') : '';
+  document.getElementById('field-timezone').value = rule
+    ? (rule.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone)
+    : Intl.DateTimeFormat().resolvedOptions().timeZone;
   document.getElementById('modal-overlay').classList.remove('hidden');
   document.getElementById('field-message').focus();
 }
@@ -170,6 +174,7 @@ document.getElementById('rule-form').addEventListener('submit', async (e) => {
     intervalUnit: document.getElementById('field-interval-unit').value,
     windowStart: document.getElementById('field-window-start').value || null,
     windowEnd: document.getElementById('field-window-end').value || null,
+    timezone: document.getElementById('field-timezone').value.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone,
   };
 
   try {
