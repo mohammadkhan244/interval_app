@@ -114,6 +114,7 @@ function renderRules(rules) {
         </label>
       </div>
       <div class="rule-actions">
+        <button class="btn-done btn-ghost" data-id="${rule.id}">Done</button>
         <button class="btn-ghost btn-edit" data-id="${rule.id}">Edit</button>
         <button class="btn-ghost btn-danger btn-delete" data-id="${rule.id}">Delete</button>
       </div>
@@ -213,8 +214,22 @@ document.getElementById('rules-list').addEventListener('change', async (e) => {
 });
 
 document.getElementById('rules-list').addEventListener('click', async (e) => {
+  const doneBtn = e.target.closest('.btn-done');
   const editBtn = e.target.closest('.btn-edit');
   const deleteBtn = e.target.closest('.btn-delete');
+
+  if (doneBtn) {
+    doneBtn.textContent = '✓';
+    doneBtn.disabled = true;
+    try {
+      await apiPost('/api/action', { ruleId: doneBtn.dataset.id, action: 'done' });
+      await loadRules();
+    } catch (err) {
+      doneBtn.textContent = 'Done';
+      doneBtn.disabled = false;
+      alert('Failed: ' + err.message);
+    }
+  }
 
   if (editBtn) {
     const rule = rules.find((r) => r.id === editBtn.dataset.id);

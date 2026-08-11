@@ -330,6 +330,20 @@ select:focus {
   margin-top: 48px;
 }
 
+.btn-done {
+  color: #4caf7d;
+  border-color: #1a3a28;
+}
+
+.btn-done:hover {
+  border-color: #4caf7d;
+}
+
+.btn-done:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .btn-danger {
   background: transparent;
   color: #c0392b;
