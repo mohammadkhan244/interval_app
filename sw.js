@@ -1,4 +1,4 @@
-const CACHE_NAME = 'reminders-v1';
+const CACHE_NAME = 'reminders-v2';
 const APP_SHELL = ['/', '/index.html', '/app.js', '/style.css', '/manifest.json'];
 
 self.addEventListener('install', (e) => {
