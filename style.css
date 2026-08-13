@@ -96,10 +96,46 @@ button:active {
   opacity: 0.55;
 }
 
-.rule-top {
+.rule-header {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rule-summary {
+  flex: 1;
+  min-width: 0;
+}
+
+.rule-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.chevron {
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  display: inline-block;
+  transform: rotate(0deg);
+  transition: transform 0.18s ease;
+}
+
+.rule-card.expanded .chevron {
+  transform: rotate(90deg);
+}
+
+.rule-body {
+  display: none;
+  margin-top: 14px;
+}
+
+.rule-card.expanded .rule-body {
+  display: block;
 }
 
 .rule-message {

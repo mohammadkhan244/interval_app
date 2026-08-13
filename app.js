@@ -88,40 +88,41 @@ function renderRules(rules) {
     return;
   }
 
-  list.innerHTML = rules
-    .map(
-      (rule) => `
-    <div class="rule-card ${rule.active ? '' : 'paused'}" data-id="${rule.id}">
-      <div class="rule-top">
-        <div style="flex:1">
+  list.innerHTML = rules.map((rule) => {
+    const expanded = expandedIds.has(rule.id);
+    const summary = `${intervalLabel(rule.intervalValue, rule.intervalUnit)} · ${windowLabel(rule.windowStart, rule.windowEnd, rule.timezone)} · 🔥 ${rule.currentStreak ?? 0}d`;
+    return `
+    <div class="rule-card ${rule.active ? '' : 'paused'} ${expanded ? 'expanded' : ''}" data-id="${rule.id}">
+      <div class="rule-header">
+        <div class="rule-summary">
           <div class="rule-message">${escHtml(rule.message)}</div>
-          ${rule.description ? `<div class="rule-description">${escHtml(rule.description)}</div>` : ''}
-          <div class="rule-meta">
-            ${intervalLabel(rule.intervalValue, rule.intervalUnit)},
-            ${windowLabel(rule.windowStart, rule.windowEnd, rule.timezone)}
-          </div>
-          <div class="rule-stats">
-            <span class="stat">🔥 ${rule.currentStreak ?? 0}d</span>
-            <span class="stat">${rule.percentComplete ?? 0}% done</span>
-            <span class="stat">Best ${rule.longestStreak ?? 0}d</span>
-            <span class="stat">7d ${rule.last7Rate ?? 0}%</span>
-            <span class="stat">30d ${rule.last30Rate ?? 0}%</span>
-          </div>
+          <div class="rule-meta">${summary}</div>
         </div>
-        <label class="toggle" title="${rule.active ? 'Pause' : 'Resume'}">
-          <input type="checkbox" class="toggle-active" data-id="${rule.id}" ${rule.active ? 'checked' : ''} />
-          <span class="toggle-track"></span>
-        </label>
+        <div class="rule-header-controls">
+          <label class="toggle" title="${rule.active ? 'Pause' : 'Resume'}">
+            <input type="checkbox" class="toggle-active" data-id="${rule.id}" ${rule.active ? 'checked' : ''} />
+            <span class="toggle-track"></span>
+          </label>
+          <span class="chevron">›</span>
+        </div>
       </div>
-      <div class="rule-actions">
-        <button class="btn-done btn-ghost" data-id="${rule.id}">Done</button>
-        <button class="btn-ghost btn-edit" data-id="${rule.id}">Edit</button>
-        <button class="btn-ghost btn-danger btn-delete" data-id="${rule.id}">Delete</button>
+      <div class="rule-body">
+        ${rule.description ? `<div class="rule-description">${escHtml(rule.description)}</div>` : ''}
+        <div class="rule-stats">
+          <span class="stat">🔥 ${rule.currentStreak ?? 0}d</span>
+          <span class="stat">${rule.percentComplete ?? 0}% done</span>
+          <span class="stat">Best ${rule.longestStreak ?? 0}d</span>
+          <span class="stat">7d ${rule.last7Rate ?? 0}%</span>
+          <span class="stat">30d ${rule.last30Rate ?? 0}%</span>
+        </div>
+        <div class="rule-actions">
+          <button class="btn-done btn-ghost" data-id="${rule.id}">Done</button>
+          <button class="btn-ghost btn-edit" data-id="${rule.id}">Edit</button>
+          <button class="btn-ghost btn-danger btn-delete" data-id="${rule.id}">Delete</button>
+        </div>
       </div>
-    </div>
-  `
-    )
-    .join('');
+    </div>`;
+  }).join('');
 }
 
 function escHtml(str) {
@@ -131,6 +132,7 @@ function escHtml(str) {
 // ─── State ───────────────────────────────────────────────────────────────────
 
 let rules = [];
+const expandedIds = new Set();
 
 async function loadRules() {
   try {
@@ -214,6 +216,21 @@ document.getElementById('rules-list').addEventListener('change', async (e) => {
 });
 
 document.getElementById('rules-list').addEventListener('click', async (e) => {
+  // Collapse/expand on header tap — but not when tapping the toggle switch
+  const header = e.target.closest('.rule-header');
+  if (header && !e.target.closest('.toggle')) {
+    const card = header.closest('.rule-card');
+    const id = card.dataset.id;
+    if (expandedIds.has(id)) {
+      expandedIds.delete(id);
+      card.classList.remove('expanded');
+    } else {
+      expandedIds.add(id);
+      card.classList.add('expanded');
+    }
+    return;
+  }
+
   const doneBtn = e.target.closest('.btn-done');
   const editBtn = e.target.closest('.btn-edit');
   const deleteBtn = e.target.closest('.btn-delete');
