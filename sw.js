@@ -1,4 +1,4 @@
-const CACHE_NAME = 'reminders-v3';
+const CACHE_NAME = 'reminders-v4';
 const APP_SHELL = ['/', '/index.html', '/app.js', '/style.css', '/manifest.json'];
 
 self.addEventListener('install', (e) => {
@@ -10,11 +10,17 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    caches.keys().then(async (keys) => {
+      const stale = keys.filter((k) => k !== CACHE_NAME);
+      await Promise.all(stale.map((k) => caches.delete(k)));
+      await self.clients.claim();
+      // Force all open tabs to reload so they pick up the new cached files
+      if (stale.length) {
+        const all = await self.clients.matchAll({ type: 'window' });
+        all.forEach((c) => c.navigate(c.url));
+      }
+    })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
