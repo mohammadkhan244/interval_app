@@ -68,6 +68,79 @@ async function apiDelete(path) {
   return res.json();
 }
 
+// ─── Next-fire calculation ────────────────────────────────────────────────────
+
+function getIntervalMs(value, unit) {
+  const v = Number(value);
+  if (unit === 'min')   return v * 60000;
+  if (unit === 'hour')  return v * 3600000;
+  if (unit === 'day')   return v * 86400000;
+  if (unit === 'month') return v * 30 * 86400000;
+  return Infinity;
+}
+
+function hhmToMin(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function tzLocalMin(date, tz) {
+  const p = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(date);
+  return Number(p.find(x => x.type === 'hour').value) * 60
+       + Number(p.find(x => x.type === 'minute').value);
+}
+
+function atTimeInTz(date, hhmm, tz) {
+  // Returns a Date whose local time in `tz` is `hhmm` on the same calendar day as `date` in `tz`
+  const dfmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour12: false,
+  }).formatToParts(date);
+  const ds = `${dfmt.find(p=>p.type==='year').value}-${dfmt.find(p=>p.type==='month').value}-${dfmt.find(p=>p.type==='day').value}`;
+  const [h, m] = hhmm.split(':').map(Number);
+  const approx = new Date(`${ds}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00Z`);
+  // Correct for timezone offset: offset = approx_UTC - local_time_at_approx
+  const loc = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  }).formatToParts(approx);
+  const g = t => Number(loc.find(p=>p.type===t).value);
+  const localMs = Date.UTC(g('year'), g('month')-1, g('day'), g('hour'), g('minute'), g('second'));
+  return new Date(approx.getTime() * 2 - localMs);
+}
+
+function computeNextFire(rule) {
+  if (!rule.active) return 'Paused';
+  const tz = rule.timezone || 'America/Chicago';
+  const ims = getIntervalMs(rule.intervalValue, rule.intervalUnit);
+  if (!isFinite(ims)) return '—';
+
+  const now = new Date();
+  const ref = rule.lastFired ? new Date(rule.lastFired)
+            : rule.createdAt ? new Date(rule.createdAt) : now;
+  let next = new Date(ref.getTime() + ims);
+  if (next < now) next = new Date(now);
+
+  if (rule.windowStart || rule.windowEnd) {
+    const ws = rule.windowStart || '00:00';
+    const we = rule.windowEnd   || '23:59';
+    const sMin = hhmToMin(ws);
+    const eMin = hhmToMin(we);
+    for (let i = 0; i < 8; i++) {
+      const cur = tzLocalMin(next, tz);
+      if (cur >= sMin && cur <= eMin) break;
+      if (cur < sMin) { next = atTimeInTz(next, ws, tz); break; }
+      next = atTimeInTz(new Date(next.getTime() + 86400000), ws, tz);
+    }
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, month: 'short', day: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  }).format(next);
+}
+
 // ─── Render ──────────────────────────────────────────────────────────────────
 
 function intervalLabel(value, unit) {
@@ -91,12 +164,15 @@ function renderRules(rules) {
   list.innerHTML = rules.map((rule) => {
     const expanded = expandedIds.has(rule.id);
     const summary = `${intervalLabel(rule.intervalValue, rule.intervalUnit)} · ${windowLabel(rule.windowStart, rule.windowEnd, rule.timezone)} · 🔥 ${rule.currentStreak ?? 0}d`;
+    const nextFire = computeNextFire(rule);
+    const nextLabel = nextFire === 'Paused' ? 'Paused' : `Next: ${nextFire}`;
     return `
     <div class="rule-card ${rule.active ? '' : 'paused'} ${expanded ? 'expanded' : ''}" data-id="${rule.id}">
       <div class="rule-header">
         <div class="rule-summary">
           <div class="rule-message">${escHtml(rule.message)}</div>
           <div class="rule-meta">${summary}</div>
+          <div class="rule-next">${nextLabel}</div>
         </div>
         <div class="rule-header-controls">
           <label class="toggle" title="${rule.active ? 'Pause' : 'Resume'}">

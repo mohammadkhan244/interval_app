@@ -145,6 +145,12 @@ button:active {
   word-break: break-word;
 }
 
+.rule-next {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
 .rule-description {
   font-size: 0.85rem;
   color: var(--muted);
