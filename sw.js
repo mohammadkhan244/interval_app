@@ -1,5 +1,8 @@
-const CACHE_NAME = 'reminders-v4';
+const CACHE_NAME = 'reminders-v5';
 const APP_SHELL = ['/', '/index.html', '/app.js', '/style.css', '/manifest.json'];
+
+// Must match REMINDERS_SECRET env var and the value hardcoded in app.js
+const API_SECRET = '103074';
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -56,9 +59,16 @@ self.addEventListener('notificationclick', (e) => {
     e.waitUntil(
       fetch('/api/action', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-reminders-secret': API_SECRET,
+        },
         body: JSON.stringify({ ruleId, action }),
       })
+        .then((res) => {
+          if (!res.ok) console.error(`[SW] /api/action ${action} failed: ${res.status}`);
+        })
+        .catch((err) => console.error('[SW] /api/action fetch error:', err))
     );
   } else {
     e.waitUntil(
